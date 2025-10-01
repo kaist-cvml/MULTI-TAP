@@ -1,0 +1,53 @@
+# Model arguments
+model_name_or_path: Qwen/Qwen2-VL-2B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+
+# Data training arguments
+dataset_name: brl-xfact/polaris_imagereward
+dataset_split: ['train']
+preprocessing_num_workers: 1
+auto_insert_empty_system_msg: false
+
+# Reward Model config
+use_peft : false
+lora_target_modules: ["q_proj", "v_proj"]
+max_length: 2048
+
+bf16: true
+bf16_full_eval: true
+do_eval: false
+tf32: true
+torch_compile: true
+optim: paged_adamw_8bit
+gradient_accumulation_steps: 4
+gradient_checkpointing: false
+gradient_checkpointing_kwargs:
+  use_reentrant: False
+learning_rate: 2.0e-07
+log_level: info
+logging_steps: 5  
+logging_strategy: steps
+lr_scheduler_type: cosine
+max_steps: -1
+num_train_epochs: 1
+### NOTE: set output directory here
+output_dir: 
+project_name: 
+run_name: 
+entity_name: 
+overwrite_output_dir: true
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+remove_unused_columns: false
+report_to:
+- tensorboard
+- wandb
+save_strategy: "epoch"
+seed: 42
+warmup_ratio: 0.1
+
+# Hub
+push_to_hub: true
+hub_private_repo: true
