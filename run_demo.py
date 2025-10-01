@@ -14,11 +14,34 @@ def main():
                        help="Path to checkpoint (local directory or HuggingFace model ID)")
     parser.add_argument("--dataset", type=str, default="brl-xfact/polaris_imagereward",
                        help="Dataset to use for demo")
-    parser.add_argument("--device", type=str, default="cuda",
+    parser.add_argument("--device", type=str, default="cuda:4",
                        help="Device to run on (cuda/cpu)")
     args = parser.parse_args()
 
+    # Normalize/validate device
+    requested_device = args.device
+    if requested_device.startswith("cuda"):
+        if torch.cuda.is_available():
+            # Validate index if provided
+            if ":" in requested_device:
+                try:
+                    cuda_index = int(requested_device.split(":", 1)[1])
+                    if cuda_index < 0 or cuda_index >= torch.cuda.device_count():
+                        print(f"Warning: Requested {requested_device} not available. Falling back to cuda:0.")
+                        args.device = "cuda:0"
+                except ValueError:
+                    print(f"Warning: Malformed CUDA device '{requested_device}'. Falling back to cuda:0.")
+                    args.device = "cuda:0"
+            else:
+                args.device = "cuda:0"
+        else:
+            print("Warning: CUDA not available. Falling back to CPU.")
+            args.device = "cpu"
+    else:
+        args.device = "cpu"
+
     # Check if ckpt_path is a local directory or a remote model
+    model = None
     if os.path.exists(args.ckpt_path) and os.path.isdir(args.ckpt_path):
         # Local directory - use from_local_checkpoint
         print(f"Loading model from local directory: {args.ckpt_path}")
@@ -37,9 +60,13 @@ def main():
         except Exception as e:
             print(f"Failed to load model from HuggingFace Hub: {e}")
             print("Falling back to loading backbone model only...")
-            # If loading the full reward model fails, we'll use the backbone model
-            # and the reward head will be randomly initialized
-            pass
+            # If loading the full reward model fails, use the backbone model with a randomly initialized reward head
+            try:
+                model = VLMRewardModel.from_pretrained(args.model_name, base_model_name=args.model_name)
+                print("Successfully initialized backbone-only reward model")
+            except Exception as e2:
+                print(f"Error initializing backbone-only model: {e2}")
+                raise
 
     # Load processor with proper token handling
     hf_token = os.getenv("HF_TOKEN")
@@ -53,7 +80,7 @@ def main():
     model = model.to(args.device).eval()
     
     # On CUDA, disable Flash/Memory-Efficient SDPA and force math backend to avoid cuDNN engine errors
-    if args.device == "cuda":
+    if args.device.startswith("cuda"):
         try:
             torch.backends.cuda.enable_flash_sdp(False)
             torch.backends.cuda.enable_mem_efficient_sdp(False)
@@ -66,7 +93,10 @@ def main():
     # Pull one sample
     print(f"Loading dataset: {args.dataset}")
     try:
-        ds = load_dataset(args.dataset, split="test") if "test" in load_dataset(args.dataset).keys() else load_dataset(args.dataset, split="train[:1]")
+        try:
+            ds = load_dataset(args.dataset, split="test")
+        except Exception:
+            ds = load_dataset(args.dataset, split="train[:1]")
         example = ds[0]
         print("Successfully loaded dataset sample")
     except Exception as e:
@@ -108,7 +138,7 @@ def main():
     # Run inference
     try:
         with torch.no_grad():
-            if args.device == "cuda":
+            if args.device.startswith("cuda"):
                 with torch.cuda.amp.autocast(dtype=torch.float16):
                     score = model(**inputs).rewards
             else:
