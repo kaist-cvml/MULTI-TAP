@@ -141,7 +141,6 @@ ArXiv preprint coming soon.
       primaryClass={cs.CV},
       url={https://arxiv.org/abs/2510.00766}, 
 }
-}
 ```
 
 ## License
