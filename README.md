@@ -131,13 +131,14 @@ We thank the maintainers and contributors of Hugging Face Transformers, Accelera
 ArXiv preprint coming soon.
 
 ```bibtex
-@misc{kim2026multitap,
-  title        = {Multi-Objective Task-Aware Predictor for Image-Text Alignment},
-  author       = {Kim, Eunki and An, Na Min and Thorne, James and Shim, Hyunjung},
-  year         = {2026},
-  howpublished = {arXiv preprint},
-  note         = {Equal contribution between first two authors},
-  url          = {https://kaist-cvml.github.io/multitap}
+@misc{kim2025multiobjectivetaskawarepredictorimagetext,
+      title={Multi-Objective Task-Aware Predictor for Image-Text Alignment}, 
+      author={Eunki Kim and Na Min An and James Thorne and Hyunjung Shim},
+      year={2025},
+      eprint={2510.00766},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2510.00766}, 
 }
 ```
 
