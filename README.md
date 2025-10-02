@@ -132,6 +132,7 @@ ArXiv preprint coming soon.
 
 ```bibtex
 @misc{kim2025multiobjectivetaskawarepredictorimagetext,
+      @misc{kim2025multiobjectivetaskawarepredictorimagetext,
       title={Multi-Objective Task-Aware Predictor for Image-Text Alignment}, 
       author={Eunki Kim and Na Min An and James Thorne and Hyunjung Shim},
       year={2025},
@@ -139,6 +140,7 @@ ArXiv preprint coming soon.
       archivePrefix={arXiv},
       primaryClass={cs.CV},
       url={https://arxiv.org/abs/2510.00766}, 
+}
 }
 ```
 
